@@ -1,0 +1,1754 @@
+---
+title: "Master'sxperiment data"
+output:
+  html_document: default
+  'utput: Default': default
+date: "2023-04-20"
+---
+Группа 1 - Контрольная группа с постоянной двигательной активностью.
+Группа 2 - Экспериментальная группа с вариантивной двигательной активностью.
+Пример инструкций:
+"Для группы_1 - “Во время прохождения эксперимента вам необходимо обязательно двигать руками с контейнером при оценке количества элементов”." 
+"Для группы_2 - “Во время прохождения эксперимента вы можете двигать контейнер при оценке количества элементов”."
+Container_1 - Конгруентная/некогруентая корреляция категорий с дистракторами. 
+Container_2 - Конгруентная/некогруентая корреляция категорий с дистракторами. 
+Container_3 - Конгруентная/неконгруентная корреляция 1 признака.
+Container_4 - Конгруентная/неконгруентная корреляция 1 признака.
+Container_5 - Конгруентная/неконгруентная корреляция 1 признака.
+Container_6 - Конгруентная/неконгруентная корреляция 1 признака.
+Container_7 - Конгруентная/неконгруентная корреляция 1 признака, т.е. они равны в категории формы, однако межкатегориальная корреляции отсутствует.
+Container_8 - Конгруентная/неконгруентная корреляция 1 признака, т.е. они равны в категории формы, однако межкатегориальная корреляции отсутствует.
+Container_9 - Контрастное распределение признака c дистракторами.
+Container_10 - Контрастное распределение признака c дистракторами.
+Question_1 - Общее количество элементов
+Question_2 - Чего больше кубов или октаэдров? 0 - равно, 1 - куб, 2 - октаэдр.
+Question_3 - Количество элементов чёрного цвета
+Question_4 - Количество кубов синего цвета
+Question_5 - Количество октаэдров зеленого цвета
+Question_6 - Количество элементов жёлтого цвета
+Question_7 - Количество кубов черного цвета
+Question_8 - Количество октаэдров синего цвета
+Question_9 - Количество октаэдров желтого цвета
+Question_10 - Количество кубов зеленого цвета
+Question_11 - Общее количество октаэдров
+Question_12 - Количество кубов желтого цвета
+Question_13 - Количество октаэдров черного цвета
+Question_14 - Количество элементов синего цвета
+Question_15 - Общее количество кубов
+Question_16 - Количество элементов зелёного цвета
+Question_17 - Количество октаэдров черного цвета в 9C and 10C
+Question_18 - Количество октаэдров белого цвета в 9С and 10C
+
+```{r include=FALSE}
+#install.packages(c("tibble", "readr","yardstick","caret","outliers","EnvStats","ggstatsplot","psycho","ggplot2"))
+#install.packages(c("ggplot2", "ggpubr", "tidyverse", "broom", "AICcmodavg"))
+#install.packages("explore")
+#install.packages("correlationfunnel")
+#install.packages("report")
+#install.packages("gplots")
+#install.packages("WriteXLS")
+#install.packages("psych")
+#install.packages("Hmisc")
+#install.packages("corrplot")
+#install.packages("ggstatsplot")
+#install.packages("RcmdrMisc")
+#install.packages("hrbrthemes")
+#install.packages("plotrix")
+#install.packages("quickpsy")
+#install.packages("rstatix")
+#install.packages("emmeans")
+#install.packages("broom")
+#install.packages("quickpsy")
+#install.packages("kableExtra")
+#install.packages("rempsyc")
+#install.packages("report")
+#install.packages("flextable")
+#install.packages("qplots")
+#install.packages("GGally")
+#install.packages("ggridges")
+#install.packages("lsr")
+
+library(lsr)
+library(ggridges)
+library(emmeans)
+library(rstatix)
+library(quickpsy)
+library(plotrix)
+library(hrbrthemes)
+library(ggstatsplot)
+library(data.table)
+library(reshape2)
+library(WriteXLS)
+library(tibble)
+library(readr)
+library(caret)
+library(yardstick)
+library(outliers)
+library(EnvStats)
+library(ggplot2)
+library(psycho)
+library(tidyverse)
+library(explore)
+library(shiny)
+library(correlationfunnel)
+library(dplyr)
+library(ggpubr)
+library(report)
+library(broom)
+library(AICcmodavg)
+library(gplots)
+library(psych)
+library(corrplot)
+library(tidyr)
+library(RcmdrMisc)
+library(car)
+library(GGally)
+library(rempsyc)
+library(kableExtra)
+```
+
+
+
+
+```{r}
+draw_dist <- function(df, container) {
+  p1 <- ggplot(df, aes(container)) + geom_histogram(fill = "orange", alpha = 0.5) + labs(title = "")
+  p2 <- ggplot(df, aes(container)) + geom_density(fill = "orange", alpha = 0.5) + labs(title = "")
+
+  return(list(p1, p2))
+}
+```
+
+#Read data for analysis
+```{r}
+getwd()
+df <- read.csv("exp_all_condition.csv", header = T, sep = ";", quote = "")
+str(df)
+dim(df)
+sum(is.na(df))
+sum(duplicated(df[,-1]))
+names(df)
+
+df_psychofunction <- read.csv("categoric_question.csv", header = T, sep = ";", quote = "")
+df_psychofunction <- df_psychofunction[,-1]
+df_psychofunction$Gender <- factor(df_psychofunction$Gender)
+df_psychofunction$Group <- factor(df_psychofunction$Group)
+
+
+describe(df)
+```
+
+#Change data for further processing
+
+```{r}
+names(df) [5:14] <- c("Container_1", "Container_2","Container_3","Container_4","Container_5","Container_6","Container_7","Container_8","Container_9","Container_10")
+names(df) [17:34] <- c("Question_1","Question_2","Question_3","Question_4","Question_5","Question_6","Question_7","Question_8","Question_9","Question_10","Question_11","Question_12","Question_13","Question_14","Question_15","Question_16","Question_17","Question_18")
+
+
+df$Gender <- gsub("6", "female", df$Gender)
+df$Gender <- gsub("<","male", df$Gender)
+
+df$Container_1 <- gsub(",", ".", df$Container_1)
+df$Container_1 <- as.double(df$Container_1)
+df$Container_1 <- format(round(df$Container_1, 3))
+df$Container_1 <- as.numeric(df$Container_1)
+
+df$Container_2 <- gsub(",", ".", df$Container_2)
+df$Container_2 <- as.double(df$Container_2)
+df$Container_2 <- format(round(df$Container_2, 3))
+df$Container_2 <- as.numeric(df$Container_2)
+
+
+df$Group <- factor(df$Group)
+df$Gender <- factor(df$Gender)
+
+
+df[, c(5:34)] <- lapply(df[, c(5:34)], function(x) gsub(",", ".", x))
+df[, c(5:34)] <- lapply(df[, c(5:34)], function(x) as.double(x))
+df[, c(5:34)] <- lapply(df[, c(5:34)], function(x) format(round(x, 3)))
+df[, c(5:34)] <- lapply(df[, c(5:34)], function(x) as.numeric(x))
+str(df)
+
+```
+#Good kable table
+```{r}
+kable(df[1:15]) %>% kable_styling(latex_options = "striped")
+kable(df[c(1:4,16:34)])%>% kable_styling(latex_options = "striped")
+```
+
+#Summary statistics
+```{r}
+summary_statistics <- describe(df[, -c(3:4)])
+summary_statistics <- round(summary_statistics, 3)
+
+round_summary_statistics <- kable(summary_statistics) %>% kable_styling(latex_options = "striped")
+round_summary_statistics
+```
+
+
+#Test normal distribution
+##Containers
+```{r}
+normality_shapiro_containers <- apply(df[, c(5:15)], 2, shapiro.test)
+
+
+ifelse(normality_shapiro_containers$Mean_serial$p.value <= 0.05, round(normality_shapiro_containers$Mean_serial$p.value,5), "It is normal distribution in All")
+ifelse(normality_shapiro_containers$Container_1$p.value <= 0.05, round(normality_shapiro_containers$Container_1$p.value,5), "It is normal distribution in 1")
+ifelse(normality_shapiro_containers$Container_2$p.value <= 0.05, round(normality_shapiro_containers$Container_2$p.value,5), "It is normal distribution in 2")
+ifelse(normality_shapiro_containers$Container_3$p.value <= 0.05, round(normality_shapiro_containers$Container_3$p.value,5), "It is normal distribution in 3")
+ifelse(normality_shapiro_containers$Container_4$p.value <= 0.05, round(normality_shapiro_containers$Container_4$p.value,5), "It is normal distribution in 4")
+ifelse(normality_shapiro_containers$Container_5$p.value <= 0.05, round(normality_shapiro_containers$Container_5$p.value,5), "It is normal distribution in 5")
+ifelse(normality_shapiro_containers$Container_6$p.value <= 0.05, round(normality_shapiro_containers$Container_6$p.value,5), "It is normal distribution in 6")
+ifelse(normality_shapiro_containers$Container_7$p.value <= 0.05, round(normality_shapiro_containers$Container_7$p.value,5), "It is normal distribution in 7")
+ifelse(normality_shapiro_containers$Container_8$p.value <= 0.05, round(normality_shapiro_containers$Container_8$p.value,5), "It is normal distribution in 8")
+ifelse(normality_shapiro_containers$Container_9$p.value <= 0.05, round(normality_shapiro_containers$Container_9$p.value,5), "It is normal distribution in 9")
+ifelse(normality_shapiro_containers$Container_10$p.value <= 0.05, round(normality_shapiro_containers$Container_10$p.value,5), "It is normal distribution in 10")
+
+apply(df[, c(5:15)], 2, ggqqplot)
+
+
+for (container in df[, c(5:15)]) {
+  print(draw_dist(df[, c(5:15)], container))
+}
+
+
+```
+
+##Questions
+
+```{r}
+normality_shapiro <- apply(df[, c(16,17,19:34)], 2, shapiro.test)
+
+
+ifelse(normality_shapiro$Mean_questions$p.value <= 0.05, round(normality_shapiro$Mean_questions$p.value,5), "It is normal distribution in All")
+ifelse(normality_shapiro$Question_1$p.value <= 0.05, round(normality_shapiro$Question_1$p.value,5), "It is normal distribution in 1")
+ifelse(normality_shapiro$Question_3$p.value <= 0.05, round(normality_shapiro$Question_3$p.value,5), "It is normal distribution in 3")
+ifelse(normality_shapiro$Question_4$p.value <= 0.05, round(normality_shapiro$Question_4$p.value,5), "It is normal distribution in 4")
+ifelse(normality_shapiro$Question_5$p.value <= 0.05, round(normality_shapiro$Question_5$p.value,5), "It is normal distribution in 5")
+ifelse(normality_shapiro$Question_6$p.value <= 0.05, round(normality_shapiro$Question_6$p.value,5), "It is normal distribution in 6")
+ifelse(normality_shapiro$Question_7$p.value <= 0.05, round(normality_shapiro$Question_7$p.value,5), "It is normal distribution in 7")
+ifelse(normality_shapiro$Question_8$p.value <= 0.05, round(normality_shapiro$Question_8$p.value,5), "It is normal distribution in 8")
+ifelse(normality_shapiro$Question_9$p.value <= 0.05, round(normality_shapiro$Question_9$p.value,5), "It is normal distribution in 9")
+ifelse(normality_shapiro$Question_10$p.value <= 0.05, round(normality_shapiro$Question_10$p.value,5), "It is normal distribution in 10")
+ifelse(normality_shapiro$Question_11$p.value <= 0.05, round(normality_shapiro$Question_11$p.value,5), "It is normal distribution in 11")
+ifelse(normality_shapiro$Question_12$p.value <= 0.05, round(normality_shapiro$Question_12$p.value,5), "It is normal distribution in 12")
+ifelse(normality_shapiro$Question_13$p.value <= 0.05, round(normality_shapiro$Question_13$p.value,5), "It is normal distribution in 13")
+ifelse(normality_shapiro$Question_14$p.value <= 0.05, round(normality_shapiro$Question_14$p.value,5), "It is normal distribution in 14")
+ifelse(normality_shapiro$Question_15$p.value <= 0.05, round(normality_shapiro$Question_15$p.value,5), "It is normal distribution in 15")
+ifelse(normality_shapiro$Question_16$p.value <= 0.05, round(normality_shapiro$Question_16$p.value,5), "It is normal distribution in 16")
+ifelse(normality_shapiro$Question_17$p.value <= 0.05, round(normality_shapiro$Question_17$p.value,5), "It is normal distribution in 17")
+ifelse(normality_shapiro$Question_18$p.value <= 0.05, round(normality_shapiro$Question_18$p.value,5), "It is normal distribution in 18")
+
+
+apply(df[, c(16:34)], 2, ggqqplot)
+
+
+for (question in df[, c(16:34)]) {
+  print(draw_dist(df[, c(16:34)], question))
+}
+
+```
+
+
+#Outliers test
+
+```{r}
+results_outliers_test_p<- apply(df[, c(5:17,19:34)], 2, grubbs.test, two.sided = T)
+
+ifelse(results_outliers_test_p$Container_1$p.value <= 0.05, round(results_outliers_test_p$Container_1$p.value, 5), "There is not outlier in Container 1")
+ifelse(results_outliers_test_p$Container_3$p.value <= 0.05, round(results_outliers_test_p$Container_3$p.value, 5), "There is not outlier in Container 3")
+ifelse(results_outliers_test_p$Container_4$p.value <= 0.05, round(results_outliers_test_p$Container_4$p.value, 5), "There is not outlier in Container 4")
+ifelse(results_outliers_test_p$Container_5$p.value <= 0.05, round(results_outliers_test_p$Container_5$p.value, 5), "There is not outlier in Container 5")
+ifelse(results_outliers_test_p$Container_6$p.value <= 0.05, round(results_outliers_test_p$Container_6$p.value, 5), "There is not outlier in Container 6")
+ifelse(results_outliers_test_p$Container_7$p.value <= 0.05, round(results_outliers_test_p$Container_7$p.value, 5), "There is not outlier in Container 7")
+ifelse(results_outliers_test_p$Container_8$p.value <= 0.05, round(results_outliers_test_p$Container_8$p.value, 5), "There is not outlier in Container 8")
+ifelse(results_outliers_test_p$Container_9$p.value <= 0.05, round(results_outliers_test_p$Container_9$p.value, 5), "There is not outlier in Container 9")
+ifelse(results_outliers_test_p$Container_10$p.value <= 0.05, round(results_outliers_test_p$Container_10$p.value, 5), "There is not outlier in Container 10")
+ifelse(results_outliers_test_p$Mean_serial$p.value <= 0.05, round(results_outliers_test_p$Mean_serial$p.value, 5), "There is not outlier in all Container")
+
+ifelse(results_outliers_test_p$Question_1$p.value <= 0.05, round(results_outliers_test_p$Question_1$p.value,5), "There is not outlier in Question 1")
+ifelse(results_outliers_test_p$Question_2$p.value <= 0.05, round(results_outliers_test_p$Question_2$p.value,5), "There is not outlier in Question 2")
+ifelse(results_outliers_test_p$Question_3$p.value <= 0.05, round(results_outliers_test_p$Question_3$p.value,5), "There is not outlier in Question 3")
+ifelse(results_outliers_test_p$Question_4$p.value <= 0.05, round(results_outliers_test_p$Question_4$p.value,5), "There is not outlier in Question 4")
+ifelse(results_outliers_test_p$Question_5$p.value <= 0.05, round(results_outliers_test_p$Question_5$p.value,5), "There is not outlier in Question 5")
+ifelse(results_outliers_test_p$Question_6$p.value <= 0.05, round(results_outliers_test_p$Question_6$p.value,5), "There is not outlier in Question 6")
+ifelse(results_outliers_test_p$Question_7$p.value <= 0.05, round(results_outliers_test_p$Question_7$p.value,5), "There is not outlier in Question 7")
+ifelse(results_outliers_test_p$Question_8$p.value <= 0.05, round(results_outliers_test_p$Question_8$p.value,5), "There is not outlier in Question 8")
+ifelse(results_outliers_test_p$Question_9$p.value <= 0.05, round(results_outliers_test_p$Question_9$p.value,5), "There is not outlier in Question 9")
+ifelse(results_outliers_test_p$Question_10$p.value <= 0.05, round(results_outliers_test_p$Question_10$p.value,5), "There is not outlier in Question 10")
+ifelse(results_outliers_test_p$Question_11$p.value <= 0.05, round(results_outliers_test_p$Question_11$p.value,5), "There is not outlier in Question 11")
+ifelse(results_outliers_test_p$Question_12$p.value <= 0.05, round(results_outliers_test_p$Question_12$p.value,5), "There is not outlier in Question 12")
+ifelse(results_outliers_test_p$Question_13$p.value <= 0.05, round(results_outliers_test_p$Question_13$p.value,5), "There is not outlier in Question 13")
+ifelse(results_outliers_test_p$Question_14$p.value <= 0.05, round(results_outliers_test_p$Question_14$p.value,5), "There is not outlier in Question 14")
+ifelse(results_outliers_test_p$Question_15$p.value <= 0.05, round(results_outliers_test_p$Question_15$p.value,5), "There is not outlier in Question 15")
+ifelse(results_outliers_test_p$Question_16$p.value <= 0.05, round(results_outliers_test_p$Question_16$p.value,5), "There is not outlier in Question 16")
+ifelse(results_outliers_test_p$Question_17$p.value <= 0.05, round(results_outliers_test_p$Question_17$p.value,5), "There is not outlier in Question 17")
+ifelse(results_outliers_test_p$Question_18$p.value <= 0.05, round(results_outliers_test_p$Question_18$p.value,5), "There is not outlier in Question 18")
+ifelse(results_outliers_test_p$Mean_questions$p.value <= 0.05, round(results_outliers_test_p$Mean_questions$p.value,5), "There is not outlier in all Questions")
+```
+
+#Graphics in DF by containers
+
+```{r}
+ggbetweenstats(df,
+               x = Group, y= Mean_serial, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов по всем контейнерам между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Container_1, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов по контейнеру 1 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Container_2, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов по контейнеру 2 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Container_3, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов по контейнеру 3 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Container_4, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов по контейнеру 4 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Container_5, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов по контейнеру 5 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Container_6, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов по контейнеру 6 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Container_7, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов по контейнеру 7 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Container_8, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов по контейнеру 8 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Container_9, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов по контейнеру 9 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Container_10, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов по контейнеру 10 между группами")
+
+
+```
+
+#Graphics in DF by questions Сравнить по типам вопросов между группами
+
+```{r}
+#Questions 2,4,5,7,8,9,10,12,13,14,16,17,18 is not normal distribution
+ggbetweenstats(df,
+               x = Group, y = Mean_questions, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов по общему среднему по вопросам
+               между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Question_1, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 1 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Question_3, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 3 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Question_4, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 4 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Question_5, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 5 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Question_6, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 6 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Question_7, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 7 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Question_8, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 8 между группами")
+
+ggbetweenstats(df,
+               x = Group, y = Question_9, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 9 между группами")
+ggbetweenstats(df,
+               x = Group, y = Question_10, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 10 между группами")
+ggbetweenstats(df,
+               x = Group, y = Question_11, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 11 между группами")
+ggbetweenstats(df,
+               x = Group, y = Question_12, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 12 между группами")
+ggbetweenstats(df,
+               x = Group, y = Question_13, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 13 между группами")
+ggbetweenstats(df,
+               x = Group, y = Question_14, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 14 между группами")
+ggbetweenstats(df,
+               x = Group, y = Question_15, outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 15 между группами")
+ggbetweenstats(df,
+               x = Group, y = Question_16, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 16 между группами")
+ggbetweenstats(df,
+               x = Group, y = Question_17, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 17 между группами")
+ggbetweenstats(df,
+               x = Group, y = Question_18, type = "nonparametric", outlier.tagging = T, pairwise.display = "significant",
+               centrality.plotting = T,
+               bf.message = F,
+               xlab = "Группы",
+               ylab = "Процент ответов",
+               title = "Сравнение процента ответов на вопрос 18 между группами")
+```
+
+```{r}
+df %>%
+  ggplot(mapping = aes(x = Person, y = Mean_serial, color = Group)) +
+     geom_point(size = 3) +
+     geom_line(linewidth = 1) +
+     scale_y_continuous(label = scales::percent) +
+     scale_color_brewer(palette="Set1") +
+     theme_minimal() +
+     labs(title = "Средняя точность ответов по контейнерам
+          у каждого человека по группам",
+       subtitle = "",
+       x = "",
+       y = "",
+       color = "Группа")
+
+df %>%
+  ggplot(mapping = aes(x = Person, y = Mean_questions, color = Group)) +
+   geom_point(size = 3) +
+   geom_line(linewidth = 1) +
+   scale_y_continuous(label = scales::percent) +
+     scale_color_brewer(palette="Set1") +
+     theme_minimal() +
+     labs(title = "Средняя точность ответов на вопросы
+          у каждого человека по группам",
+       subtitle = "",
+       x = "",
+       y = "",
+       color = "Группа")
+
+```
+
+#convert from wide to long(mistake?)
+
+```{r}
+long_data_C <- gather(df, key = Container, Percentage, Container_1:Container_10, factor_key = T)
+long_data_C <- long_data_C[-c(5:24)]
+sum(is.na(long_data_C))
+names(long_data_C)
+
+
+df_minus_q2 <- df[, -18]
+
+long_data_Q <- gather(df_minus_q2, key = Questions, Percentage, Question_1:Question_18, factor_key = T)
+long_data_Q <- long_data_Q[-c(5:16)]
+sum(is.na(long_data_Q))
+names(long_data_Q)
+```
+
+###График всех контейнеров по распределнию эффективности ответов
+```{r}
+ggplot(
+  long_data_C, 
+  aes(x = Percentage, y = factor(Container, 
+                                 labels = c("Контейнер 1",
+                                            "Контейнер 2",
+                                            "Контейнер 3",
+                                            "Контейнер 4",
+                                            "Контейнер 5",
+                                            "Контейнер 6",
+                                            "Контейнер 7",
+                                            "Контейнер 8",
+                                            "Контейнер 9",
+                                            "Контейнер 10")), fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3, size = 0.3, rel_min_height = 0.01) +
+  scale_fill_viridis_c(name = "Точность ответов в %", option = "C") +
+  labs(title = "Распределение точности ответов среди всех групп по контейнерам")
+```
+
+### griphics of questions destribution should be painted 
+```{r}
+ggplot(
+  long_data_Q, 
+  aes(x = Percentage, y = factor(Questions, labels = c("Вопрос 1",
+                                 "Вопрос 3",
+                                 "Вопрос 4",
+                                 "Вопрос 5",
+                                 "Вопрос 6",
+                                 "Вопрос 7",
+                                 "Вопрос 8",
+                                 "Вопрос 9",
+                                 "Вопрос 10",
+                                 "Вопрос 11",
+                                 "Вопрос 12",
+                                 "Вопрос 13",
+                                 "Вопрос 14",
+                                 "Вопрос 15",
+                                 "Вопрос 16",
+                                 "Вопрос 17",
+                                 "Вопрос 18")) , fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3, size = 0.3, rel_min_height = 0.01) +
+  scale_fill_viridis_c(name = "Точность ответов в %", option = "C") +
+  labs(title = "Распределение точности ответов среди всех групп по вопросам")
+```
+
+
+
+
+#Summary_statistics for long_data -->
+```{r}
+summary_statistics_long_cont <- describe(long_data_C) 
+summary_statistics_long_quest <- describe(long_data_Q)
+
+
+kable(summary_statistics_long_cont)
+kable(summary_statistics_long_quest)
+``` 
+
+
+
+
+#Save in excel.csv
+
+```{r}
+write.csv(df, file = "Wide_Data_FrameJASP.csv")
+write.csv(long_data_C, file = "Long_Data_FrameC.csv")
+write.csv(long_data_Q, file = "Long_Data_FrameQ.csv")
+```
+
+#Graphics IN LONG_DATA by Containers
+
+```{r}
+ggplot(long_data_C,
+       aes(x = factor(Container, labels = c("Контейнер 1",
+                                            "Контейнер 2",
+                                            "Контейнер 3",
+                                            "Контейнер 4",
+                                            "Контейнер 5",
+                                            "Контейнер 6",
+                                            "Контейнер 7",
+                                            "Контейнер 8",
+                                            "Контейнер 9",
+                                            "Контейнер 10")),
+           y = Percentage)) +
+  geom_boxplot(outlier.shape = NA) +
+  scale_y_continuous(label = scales::percent) +
+  scale_color_brewer(palette="Set1") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45,hjust=1))+
+  coord_cartesian(ylim = quantile(long_data_C$Percentage, c(0, 1)))+
+  labs(title = "Средняя точность ответов в каждом контейнере",
+       subtitle = "",
+       x = "Контейнеры",
+       y = "Процент ответов",
+       color = "Группа")
+
+ggplot(long_data_C, aes(x= factor(Container,labels = c("Контейнер 1",
+                                            "Контейнер 2",
+                                            "Контейнер 3",
+                                            "Контейнер 4",
+                                            "Контейнер 5",
+                                            "Контейнер 6",
+                                            "Контейнер 7",
+                                            "Контейнер 8",
+                                            "Контейнер 9",
+                                            "Контейнер 10")),
+                        y=Percentage, fill=Group)) +
+  geom_boxplot(outlier.shape = NA)+
+  scale_y_continuous(label = scales::percent) +
+  scale_color_brewer(palette="Set1")+
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45,hjust=1))+
+  coord_cartesian(ylim = quantile(long_data_C$Percentage, c(0, 1)))+
+  labs(title = "Средняя точность ответов в каждом контейнере",
+       subtitle = "",
+       x = "Контейнеры",
+       y = "Процент ответов",
+       color = "Группа")
+
+
+ggplot(long_data_C,
+       aes(x = Percentage,
+           fill = Group)) +
+  geom_density(alpha = 0.4) +
+  theme_minimal() +
+  labs(title = "Процентное распределение по контейнерам между группами",
+       x = "Контейнеры",
+       y = "",
+       color = "Группа")
+
+```
+
+#Graphics in LONG_DATA by Questions
+```{r}
+ggplot(long_data_Q,
+       aes(factor(Questions, labels = c("Вопрос 1",
+                                 "Вопрос 3",
+                                 "Вопрос 4",
+                                 "Вопрос 5",
+                                 "Вопрос 6",
+                                 "Вопрос 7",
+                                 "Вопрос 8",
+                                 "Вопрос 9",
+                                 "Вопрос 10",
+                                 "Вопрос 11",
+                                 "Вопрос 12",
+                                 "Вопрос 13",
+                                 "Вопрос 14",
+                                 "Вопрос 15",
+                                 "Вопрос 16",
+                                 "Вопрос 17",
+                                 "Вопрос 18")),
+           y = Percentage)) +
+  geom_boxplot(outlier.shape = NA) +
+    scale_y_continuous(label = scales::percent) +
+  scale_color_brewer(palette="Set1")+
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45,hjust=1))+
+  coord_cartesian(ylim = quantile(long_data_Q$Percentage, c(0, 1)))+
+  labs(title = "Средняя точность ответов по вопросам",
+       subtitle = "",
+       x = "Вопросы",
+       y = "Процент ответов")
+
+long_data_Q %>%
+  mutate(class = fct_reorder(Questions, Percentage, .fun='length' )) %>%
+  ggplot( aes(factor(Questions, labels = c("Вопрос 1",
+                                 "Вопрос 3",
+                                 "Вопрос 4",
+                                 "Вопрос 5",
+                                 "Вопрос 6",
+                                 "Вопрос 7",
+                                 "Вопрос 8",
+                                 "Вопрос 9",
+                                 "Вопрос 10",
+                                 "Вопрос 11",
+                                 "Вопрос 12",
+                                 "Вопрос 13",
+                                 "Вопрос 14",
+                                 "Вопрос 15",
+                                 "Вопрос 16",
+                                 "Вопрос 17",
+                                 "Вопрос 18")),
+              y=Percentage, fill=Group)) +
+    geom_boxplot(outlier.shape = NA)+
+  scale_y_continuous(label = scales::percent) +
+  scale_color_brewer(palette="Set1")+
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45,hjust=1)) +
+    coord_cartesian(ylim = quantile(long_data_Q$Percentage, c(0, 1))) +
+    labs(title = "Средняя точность ответов по вопросам между группами",
+       subtitle = "",
+       x = "Вопросы",
+       y = "Процент ответов",
+       color = "Group")
+
+
+ggplot(long_data_Q,
+       aes(x = Percentage,
+           fill = Group)) +
+  geom_density(alpha = 0.4) +
+  theme_minimal() +
+  labs(title = "Процентное распределение по вопросам между группами",
+       x = "Контейнеры",
+       y = "",
+       color = "Группа")
+```
+
+
+
+
+```{r}
+cont_mean <- data.frame (
+ containers = c("Con1", "Con2", "Con3", "Con4", "Con5", "Con6", "Con7", "Con8", "Con9", "Con10"),
+ group = c(rep(1, 10), rep(2, 10)),
+ mean = c(
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_1" & long_data_C$Group == 1]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_2" & long_data_C$Group == 1]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_3" & long_data_C$Group == 1]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_4" & long_data_C$Group == 1]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_5" & long_data_C$Group == 1]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_6" & long_data_C$Group == 1]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_7" & long_data_C$Group == 1]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_8" & long_data_C$Group == 1]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_9" & long_data_C$Group == 1]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_10" & long_data_C$Group == 1]),
+
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_1" & long_data_C$Group == 2]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_2" & long_data_C$Group == 2]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_3" & long_data_C$Group == 2]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_4" & long_data_C$Group == 2]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_5" & long_data_C$Group == 2]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_6" & long_data_C$Group == 2]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_7" & long_data_C$Group == 2]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_8" & long_data_C$Group == 2]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_9" & long_data_C$Group == 2]),
+         mean(long_data_C$Percentage[long_data_C$Container == "Container_10" & long_data_C$Group == 2])
+        ),
+ se = c(
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_1" & long_data_C$Group == 1]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_2" & long_data_C$Group == 1]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_3" & long_data_C$Group == 1]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_4" & long_data_C$Group == 1]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_5" & long_data_C$Group == 1]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_6" & long_data_C$Group == 1]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_7" & long_data_C$Group == 1]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_8" & long_data_C$Group == 1]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_9" & long_data_C$Group == 1]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_10" & long_data_C$Group == 1]),
+
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_1" & long_data_C$Group == 2]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_2" & long_data_C$Group == 2]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_3" & long_data_C$Group == 2]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_4" & long_data_C$Group == 2]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_5" & long_data_C$Group == 2]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_6" & long_data_C$Group == 2]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_7" & long_data_C$Group == 2]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_8" & long_data_C$Group == 2]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_9" & long_data_C$Group == 2]),
+       std.error(long_data_C$Percentage[long_data_C$Container == "Container_10" & long_data_C$Group == 2])
+ )
+)
+
+cont_mean$mean <- round(cont_mean$mean, 3)
+cont_mean$containers <- factor(cont_mean$containers)
+cont_mean$group <- factor(cont_mean$group)
+
+
+ggplot(cont_mean,
+      aes(x = factor(containers ,
+                      labels = c("Контейнер 1",
+                                 "Контейнер 2",
+                                 "Контейнер 3",
+                                 "Контейнер 4",
+                                 "Контейнер 5",
+                                 "Контейнер 6",
+                                 "Контейнер 7",
+                                 "Контейнер 8",
+                                 "Контейнер 9",
+                                 "Контейнер 10")),
+          y = mean, col=group, group = group))+
+      geom_point(size = 3)+
+      geom_line(linewidth = 1) +
+      scale_y_continuous(label = scales::percent)+
+      scale_color_brewer(palette="Set1")+
+      geom_errorbar(aes(ymin = mean - se,
+                    ymax = mean + se),
+                width = .1,
+                size = 1)+
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45,hjust=1))+
+      labs(y = "Средний процент ответов",
+            x = "Контейнеры",
+            title = "Средний процент правильных ответов в контейнерах",
+           color = "Группа")
+
+```
+
+```{r}
+
+quest_mean <- data.frame (
+ questions = c("Questions1", "Question3", "Question4", "Question5", "Question6", "Question7", "Question8", "Question9", "Question10", "Question11", "Question12", "Question13", "Question14", "Question15", "Question16", "Question17", "Question18"),
+ group = c(rep(1, 17), rep(2, 17)),
+ mean = c(
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_1" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_3" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_4" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_5" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_6" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_7" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_8" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_9" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_10" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_11" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_12" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_13" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_14" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_15" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_16" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_17" & long_data_Q$Group == 1]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_18" & long_data_Q$Group == 1]),
+
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_1" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_3" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_4" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_5" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_6" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_7" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_8" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_9" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_10" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_11" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_12" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_13" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_14" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_15" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_16" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_17" & long_data_Q$Group == 2]),
+         mean(long_data_Q$Percentage[long_data_Q$Questions == "Question_18" & long_data_Q$Group == 2])
+        ),
+ se = c(
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_1" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_3" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_4" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_5" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_6" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_7" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_8" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_9" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_10" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_11" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_12" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_13" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_14" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_15" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_16" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_17" & long_data_Q$Group == 1]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_18" & long_data_Q$Group == 1]),
+
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_1" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_3" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_4" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_5" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_6" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_7" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_8" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_9" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_10" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_11" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_12" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_13" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_14" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_15" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_16" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_17" & long_data_Q$Group == 2]),
+       std.error(long_data_Q$Percentage[long_data_Q$Questions == "Question_18" & long_data_Q$Group == 2])
+
+ )
+)
+
+quest_mean$mean <- round(quest_mean$mean, 3)
+quest_mean$questions <- factor(quest_mean$questions)
+quest_mean$group <- factor(quest_mean$group)
+quest_mean$group <- factor(quest_mean$group)
+
+
+ggplot(quest_mean,
+      aes(x = factor(questions ,
+                      labels = c("Вопрос 1",
+                                 "Вопрос 3",
+                                 "Вопрос 4",
+                                 "Вопрос 5",
+                                 "Вопрос 6",
+                                 "Вопрос 7",
+                                 "Вопрос 8",
+                                 "Вопрос 9",
+                                 "Вопрос 10",
+                                 "Вопрос 11",
+                                 "Вопрос 12",
+                                 "Вопрос 13",
+                                 "Вопрос 14",
+                                 "Вопрос 15",
+                                 "Вопрос 16",
+                                 "Вопрос 17",
+                                 "Вопрос 18")),
+          y = mean, col=group, group = group))+
+      geom_point(size = 3)+
+      geom_line(linewidth= 1) +
+      scale_y_continuous(label = scales::percent)+
+      scale_color_brewer(palette="Set1")+
+      geom_errorbar(aes(ymin = mean - se,
+                    ymax = mean + se),
+                width = .1,
+                size = 1)+
+      theme_classic() +
+      theme(axis.text.x = element_text(angle = 45,hjust=1))+
+      labs(y = "Средний процент ответов",
+            x = "Вопросы",
+            title = "Средний процент правильных ответов по вопросам",
+            color = "Группа")
+
+```
+
+# Questions by type
+
+```{r}
+#Объединение вопросов в типы
+question_types <- df[, 17:34]
+"Общее количество элементов"
+df$type_q1 <- rowMeans(dplyr::select(question_types, 1, 11, 15))
+
+"Общее количество элементов + цвет"
+df$type_q2 <- rowMeans(dplyr::select(question_types, 3, 6, 14, 16))
+
+"Общее количество кубов + цвет"
+df$type_q3 <- rowMeans(dplyr::select(question_types, 4, 7, 10, 12))
+
+"Общее количество октаэдров + цвет"
+df$type_q4 <- rowMeans(dplyr::select(question_types, 5, 8, 9, 13 , 17, 18))
+
+"Категориальная принадлженость"
+df$type_q5 <- rowMeans(dplyr::select(question_types, 2))
+
+
+long_question_types <- gather(dplyr::select(df, 1:4, starts_with("type_q")), key = Type, Percentage, type_q1:type_q5, factor_key = T)
+long_question_types$Percentage <- round(long_question_types$Percentage, 3)
+long_question_types$Type <- factor(long_question_types$Type)
+
+
+
+question_types_mean <- data.frame (
+ type = c("Type_1", "Type_2", "Type_3", "Type_4", "Type_5"),
+ group = c(rep(1, 5), rep(2, 5)),
+ mean = c(
+         mean(long_question_types$Percentage[long_question_types$Type == "type_q1" & long_question_types$Group == 1]),
+         mean(long_question_types$Percentage[long_question_types$Type == "type_q2" & long_question_types$Group == 1]),
+         mean(long_question_types$Percentage[long_question_types$Type == "type_q3" & long_question_types$Group == 1]),
+         mean(long_question_types$Percentage[long_question_types$Type == "type_q4" & long_question_types$Group == 1]),
+         mean(long_question_types$Percentage[long_question_types$Type == "type_q5" & long_question_types$Group == 1]),
+
+         mean(long_question_types$Percentage[long_question_types$Type == "type_q1" & long_question_types$Group == 2]),
+         mean(long_question_types$Percentage[long_question_types$Type == "type_q2" & long_question_types$Group == 2]),
+         mean(long_question_types$Percentage[long_question_types$Type == "type_q3" & long_question_types$Group == 2]),
+         mean(long_question_types$Percentage[long_question_types$Type == "type_q4" & long_question_types$Group == 2]),
+         mean(long_question_types$Percentage[long_question_types$Type == "type_q5" & long_question_types$Group == 2])
+
+        ),
+ se = c(
+       std.error(long_question_types$Percentage[long_question_types$Type == "type_q1" & long_question_types$Group == 1]),
+       std.error(long_question_types$Percentage[long_question_types$Type == "type_q2" & long_question_types$Group == 1]),
+       std.error(long_question_types$Percentage[long_question_types$Type == "type_q3" & long_question_types$Group == 1]),
+       std.error(long_question_types$Percentage[long_question_types$Type == "type_q4" & long_question_types$Group == 1]),
+       std.error(long_question_types$Percentage[long_question_types$Type == "type_q5" & long_question_types$Group == 1]),
+
+       std.error(long_question_types$Percentage[long_question_types$Type == "type_q1" & long_question_types$Group == 2]),
+       std.error(long_question_types$Percentage[long_question_types$Type == "type_q2" & long_question_types$Group == 2]),
+       std.error(long_question_types$Percentage[long_question_types$Type == "type_q3" & long_question_types$Group == 2]),
+       std.error(long_question_types$Percentage[long_question_types$Type == "type_q4" & long_question_types$Group == 2]),
+       std.error(long_question_types$Percentage[long_question_types$Type == "type_q5" & long_question_types$Group == 2])
+ )
+)
+
+question_types_mean$mean <- round(question_types_mean$mean, 3)
+question_types_mean$type <- factor(question_types_mean$type)
+question_types_mean$group <- factor(question_types_mean$group)
+
+
+
+
+# ggplot(question_mean,
+#       aes(x = Type,
+#           y = Percentage, col=Group, group = Group))+
+#       geom_point(size = 3,
+#                 color = "steelblue")+
+#       geom_line() +
+#       theme(axis.text.x = element_text(angle = 45,hjust=1))+
+#       labs(y = "Средний процент ответов",
+#             x = "Контейнеры",
+#             title = "Средний процент правильных ответов в контейнерах")
+
+
+ggplot(question_types_mean,
+      aes(x = factor(type,
+                     labels = c("Тип 1",
+                                "Тип 2",
+                                "Тип 3",
+                                "Тип 4",
+                                "Тип 5")),
+          y = mean, col=group, group = group)) +
+      geom_point(size = 3) +
+      geom_line(linewidth= 1) +
+      scale_y_continuous(label = scales::percent) +
+      scale_color_brewer(palette="Set1") +
+      geom_errorbar(aes(ymin = mean - se,
+                    ymax = mean + se),
+                width = .1,
+                size = 1)+
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45,hjust=1))+
+      labs(y = "Средний процент ответов",
+            x = "Типы вопросов",
+            title = "Средний процент правильных ответов по типам вопросов")
+
+```
+
+```{r}
+
+ggplot(long_data_C, aes(x = factor(Container ,
+                      labels = c("Контейнер 1",
+                                 "Контейнер 2",
+                                 "Контейнер 3",
+                                 "Контейнер 4",
+                                 "Контейнер 5",
+                                 "Контейнер 6",
+                                 "Контейнер 7",
+                                 "Контейнер 8",
+                                 "Контейнер 9",
+                                 "Контейнер 10")) , y = Percentage, color = Group, group = Group, horiz = T))+
+  geom_point()+
+  scale_y_continuous(label = scales::percent) +
+  scale_color_brewer(palette="Set1")+
+  geom_jitter(cex = 1.5, pch = 1.0,position = position_jitter(w = 0.1, h = 0))+
+  facet_wrap(~ Group)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))+
+  labs( x = "Контейнеры",
+        y = "Проценты",
+        title = 
+        "Процентное соотношение точности ответов между 
+        группами относительно контейнеров 1-10")
+
+```
+
+```{r}
+
+ggplot(long_data_Q, aes(x = factor(Questions ,
+                      labels = c("Вопрос 1",
+                                 "Вопрос 3",
+                                 "Вопрос 4",
+                                 "Вопрос 5",
+                                 "Вопрос 6",
+                                 "Вопрос 7",
+                                 "Вопрос 8",
+                                 "Вопрос 9",
+                                 "Вопрос 10",
+                                 "Вопрос 11",
+                                 "Вопрос 12",
+                                 "Вопрос 13",
+                                 "Вопрос 14",
+                                 "Вопрос 15",
+                                 "Вопрос 16",
+                                 "Вопрос 17",
+                                 "Вопрос 18")), y = Percentage, color = Group, group=Group)) +
+  geom_jitter(width = 0.25)+
+  geom_point(cex = 1.5, pch = 1.0,position = position_jitter(w = 0.1, h = 0))+
+  scale_y_continuous(label = scales::percent) +
+      scale_color_brewer(palette="Set1")+
+  facet_wrap(~ Group) +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))+
+    labs(title = "Процентное соотношение точности ответов между группами относительно вопросов 1-18",
+      x = "Вопросы",
+      y = "Проценты")
+
+ggplot(long_data_Q, aes(x = factor(Questions ,
+                      labels = c("Вопрос 1",
+                                 "Вопрос 3",
+                                 "Вопрос 4",
+                                 "Вопрос 5",
+                                 "Вопрос 6",
+                                 "Вопрос 7",
+                                 "Вопрос 8",
+                                 "Вопрос 9",
+                                 "Вопрос 10",
+                                 "Вопрос 11",
+                                 "Вопрос 12",
+                                 "Вопрос 13",
+                                 "Вопрос 14",
+                                 "Вопрос 15",
+                                 "Вопрос 16",
+                                 "Вопрос 17",
+                                 "Вопрос 18")), y = Percentage, color = Group, group = Group))+
+  stat_summary(fun.data = 'mean_se', geom = 'errorbar', width = 0.2, color = "black") +
+  stat_summary(fun.data = 'mean_se', geom = 'pointrange', color = "black") +
+  geom_point(cex = 1.5, pch = 1.0,position = position_jitter(w = 0.1, h = 0))+
+  scale_y_continuous(label = scales::percent) +
+  scale_color_brewer(palette="Set1") +
+  facet_wrap(~ Group)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1)) +
+  labs(title = "Процентное соотношение точности ответов
+       между группами относительно вопросов 1-18",
+      x = "Вопросы",
+      y = "Проценты")
+```
+
+#T-test Student for unequal undependent variables
+
+##Container
+###Container by Group
+```{r}
+"I used the Welch t-test that is the modification of t-test student with the assumption about normal distribution"
+
+t_test_by_Group_Container <- nice_t_test(data = df,
+            response = names(df)[c(5:9, 12:15)],
+            group = "Group",
+            warning = F,
+            var.equal = F
+            )
+t_test_by_Group_Container
+
+wilcoxon_container_by_group <- data.frame("Test-Statistics for Wilcoxon test" =
+                         apply(subset(df[10:11]), 2,
+                               function(y) wilcox.test(y ~ df$Group, exact = FALSE)$statistic),
+
+                       "p-value of Wilcoxon test" =
+                        apply(subset(df[10:11]), 2,
+                              function(y) wilcox.test(y ~ df$Group, exact = FALSE)$p.value)
+)
+
+name_column_wilcoxon_container_by_group <- c("Container_6", "Container_7")
+
+statistics_column_wilcoxon_container_by_group <- c(503.5, 509.0)
+
+p_value_wilcoxon_container_by_group <- c(0.7528028, 0.8081748)
+
+
+list_wilcoxon_container_by_group <- tibble(Вопросы = name_column_wilcoxon_container_by_group , Statistics = statistics_column_wilcoxon_container_by_group, p.value = p_value_wilcoxon_container_by_group)
+
+
+
+(stats.table_list_wilcoxon_container_by_group <- as.data.frame(list_wilcoxon_container_by_group))
+
+
+nice_table(t_test_by_Group_Container,
+           title  = c("Таблица 2", "Различия эффективности ответа по контейнерам между группами"),
+           note = c("* p < .05, ** p < .01, *** p < .001"))
+
+nice_table(stats.table_list_wilcoxon_container_by_group,
+           title  = c("Таблица 3", "Различия эффективности ответа по контейнерам между группами"),
+           note = c("* p < .05, ** p < .01, *** p < .001"),
+           short = TRUE)
+
+
+
+```
+
+###Container by Gender
+```{r}
+t_test_Container_by_Gender <- nice_t_test(data = df,
+            response = names(df)[c(5:9, 12:15)],
+            group = "Gender",
+            warning = F,
+            var.equal = F
+            )
+t_test_Container_by_Gender
+
+
+wilcoxon_container_by_gender <- data.frame("Test-Statistics for Wilcoxon test" =
+                         apply(subset(df[10:11]), 2,
+                               function(y) wilcox.test(y ~ df$Gender, exact = FALSE)$statistic),
+
+                       "p-value of Wilcoxon test" =
+                        apply(subset(df[10:11]), 2,
+                              function(y) wilcox.test(y ~ df$Gender, exact = FALSE)$p.value)
+)
+
+
+name_column_wilcoxon_container_by_gender <- c("Container_6", "Container_7")
+statistics_column_wilcoxon_container_by_gender <- c(287.5, 367.5)
+p_value_wilcoxon_container_by_gender <- c(0.1755111, 0.9131992)
+
+
+list_wilcoxon_container_by_gender <- tibble(Вопросы = name_column_wilcoxon_container_by_gender , Statistics = statistics_column_wilcoxon_container_by_gender, p.value = p_value_wilcoxon_container_by_gender)
+
+
+
+(stats.table_wilcoxon_container_by_gender <- as.data.frame(list_wilcoxon_container_by_gender))
+
+nice_table(t_test_Container_by_Gender,
+           title  = c("Таблица 1", "Различия эффективности ответа по контейнерам по полу"),
+           note = c("* p < .05, ** p < .01, *** p < .001"))
+
+
+nice_table(stats.table_wilcoxon_container_by_gender,
+           title  = c("Таблица 1", "Различия эффективности ответа по вопросам между по полу"),
+           note = c("* p < .05, ** p < .01, *** p < .001"),
+           short = TRUE)
+
+```
+
+##Question
+###Question by Group
+```{r}
+"Questions 2,4,5,7,8,9,10,12,13,14,16,17,18 is not normal distribution"
+t_test_Group_by_Question <- nice_t_test(data = df,
+            response = names(df)[c(17, 19, 22, 27,31)],
+            group = "Group",
+            warning = F,
+            var.equal = F
+            )
+t_test_Group_by_Question
+
+wilcoxon <- data.frame("Test-Statistics for Wilcoxon test" =
+                         apply(subset(df[c(18,20,21,23:26,28,29,30,32:34)]), 2,
+                               function(y) wilcox.test(y ~ df$Group, exact = FALSE)$statistic),
+
+                       "p-value of Wilcoxon test" =
+                        apply(subset(df[c(18,20,21,23:26,28,29,30,32:34)]), 2,
+                              function(y) wilcox.test(y ~ df$Group, exact = FALSE)$p.value)
+)
+
+name_column <- c("Question_2","Question_4", "Question_5","Question_7", "Question_8", "Question_9", "Question_10", "Question_12", "Question_13", "Question_14", "Question_16", "Question_17", "Question_18")
+statistics_column <- c(612.5, 577.5, 530.0, 614.5, 525.5, 577.0, 644.0, 661.5, 721.0, 512.0, 599.0, 577.0, 600.5)
+p_value_wilcox <- c(0.24853880,0.52016911,0.98428712,0.25904353,0.97904734,0.52441315,0.12937054,0.08010876,0.01153002,0.83882737,0.35489134,0.52216209,0.34328729)
+
+
+wilcoxon_list <- tibble(Вопросы = name_column , Statistics = statistics_column, p.value = p_value_wilcox)
+
+
+(stats.table <- as.data.frame(wilcoxon_list))
+
+
+
+nice_table(t_test_Group_by_Question,
+           title  = c("Таблица 1", "Различия эффективности ответа по вопросам между группами"),
+           note = c("* p < .05, ** p < .01, *** p < .001"))
+
+nice_table(stats.table,
+           title  = c("Таблица 1", "Различия эффективности ответа по вопросам между группами"),
+           note = c("* p < .05, ** p < .01, *** p < .001"),
+           short = TRUE)
+
+
+```
+
+###Question by Gender
+```{r}
+
+t_test_Question_by_Gender <- nice_t_test(data = df,
+            response = names(df)[c(17, 19, 22, 27,31)],
+            group = "Gender",
+            warning = F,
+            var.equal = F
+            )
+t_test_Question_by_Gender
+
+wilcoxon_question_by_gender <- data.frame("Test-Statistics for Wilcoxon test" =
+                         apply(subset(df[c(18,20,21,23:26,28,29,30,32:34)]), 2,
+                               function(y) wilcox.test(y ~ df$Gender, exact = FALSE)$statistic),
+
+                       "p-value of Wilcoxon test" =
+                        apply(subset(df[c(18,20,21,23:26,28,29,30,32:34)]), 2,
+                              function(y) wilcox.test(y ~ df$Gender, exact = FALSE)$p.value)
+)
+
+wilcoxon_question_by_gender_name_column <- c("Question_2","Question_4", "Question_5","Question_7", "Question_8", "Question_9", "Question_10", "Question_12", "Question_13", "Question_14", "Question_16", "Question_17", "Question_18")
+wilcoxon_question_by_gender_statistics_column <- c(362.0,411.0,334.5,346.0,320.0,381.5,370.5,340.5,416.5,316.5,303.5,464.0,342.0)
+wilcoxon_question_by_gender_p_value <- c(0.8385471,0.5803709,0.5331659,0.6571713,0.3957624,0.9255513,0.9503057,0.5955155,0.5231835,0.3664738,0.2689200,0.1658146,0.6117365)
+
+list_wilcoxon_question_by_gender <- tibble(Вопросы = wilcoxon_question_by_gender_name_column , Statistics = wilcoxon_question_by_gender_statistics_column, p.value = wilcoxon_question_by_gender_p_value)
+
+
+(stats.table_list_wilcoxon_question_by_gender <- as.data.frame(list_wilcoxon_question_by_gender))
+
+
+nice_table(t_test_Question_by_Gender,
+           title  = c("Таблица 1", "Различия эффективности ответа по вопросам по полу"),
+           note = c("* p < .05, ** p < .01, *** p < .001"))
+
+nice_table(stats.table_list_wilcoxon_question_by_gender,
+           title  = c("Таблица 1", "Различия эффективности ответа по вопросам по полу"),
+           note = c("* p < .05, ** p < .01, *** p < .001"),
+           short = TRUE)
+```
+
+#ANOVA
+##ANOVA long between Percentage, Container
+```{r}
+options(scipen = 12)
+
+#perform and save results
+anova_Percentage_Container <- aov(Percentage ~ Container, data = long_data_C)
+a <- anova(lm(Percentage ~ Container, data = long_data_C))
+
+#summary of anova
+anova_summary(a, detailed = F, effect.size = "ges")
+report::report(anova_Percentage_Container)
+
+
+#post_hoc of anova results and graphs
+TukeyHSD(anova_Percentage_Container)
+plot(TukeyHSD(anova_Percentage_Container))
+
+interaction.plot(long_data_C$Container, long_data_C$Group, long_data_C$Percentage)
+
+summary.lm(anova_Percentage_Container)
+
+ggbetweenstats(data = long_data_C,
+               x = Container,
+               y = Percentage,
+               type = "parametric",
+               var.equal = T,
+               plot.type = "box",
+               pairwise.comparisons = T,
+               pairwise.display = "significance",
+               centrality.plotting = F,
+               bf.message = F)
+
+```
+
+##ANOVA long between Percentage, Container*Group + Gender
+```{r}
+
+AOV_percentage_CG <- anova(lm(Percentage ~ Container*Group + Gender, long_data_C))
+anova_summary(AOV_percentage_CG, detailed = TRUE, effect.size = "ges")
+b <- aov(Percentage ~ Container*Group + Gender, long_data_C)
+
+report::report(b)
+```
+
+
+```{r}
+TukeyHSD(b)
+plot(TukeyHSD(b))
+summary.lm(b)
+```
+
+
+##Kruskal-Wallis test (ANOVA non parametric) between Questions
+```{r}
+kruskal.test(Percentage ~ Questions, data = long_data_Q)
+
+AOV_percentage_QQ <- anova(lm(Percentage ~ Questions*Group + Gender, long_data_Q))
+c <- aov(Percentage ~ Questions*Group + Gender, long_data_Q)
+
+report::report(c)
+anova_summary(AOV_percentage_QQ, detailed = TRUE, effect.size = "ges")
+
+```
+
+
+```{r}
+TukeyHSD(c)
+plot(TukeyHSD(c))
+summary.lm(c)
+```
+
+#Anova demands homoscedasticity, multicollenearity ,linearity assumption
+```{r}
+#install.packages("GGally")
+
+
+options(scipen = 12)
+bartlett.test(Percentage ~ Container, data = long_data_C)
+bartlett.test(Percentage ~ Questions, data = long_data_Q)
+plot(b)
+plot(c)
+
+
+df %>% cor_test(Container_1:Container_10)
+df %>% cor_test(Question_1:Question_18)
+
+leveneTest(Container_1 ~ Group, data = df)
+leveneTest(Container_2 ~ Group, data = df)
+leveneTest(Container_3 ~ Group, data = df)
+leveneTest(Container_4 ~ Group, data = df)
+leveneTest(Container_5 ~ Group, data = df)
+leveneTest(Container_6 ~ Group, data = df)
+leveneTest(Container_7 ~ Group, data = df)
+leveneTest(Container_8 ~ Group, data = df)
+leveneTest(Container_9 ~ Group, data = df)
+leveneTest(Container_10 ~ Group, data = df)
+leveneTest(Mean_serial ~ Group, data = df)
+
+
+leveneTest(Question_1 ~ Group, data = df)
+leveneTest(Question_2 ~ Group, data = df)
+leveneTest(Question_3 ~ Group, data = df)
+leveneTest(Question_4 ~ Group, data = df)
+leveneTest(Question_5 ~ Group, data = df)
+leveneTest(Question_6 ~ Group, data = df)
+leveneTest(Question_7 ~ Group, data = df)
+leveneTest(Question_8 ~ Group, data = df)
+leveneTest(Question_9 ~ Group, data = df)
+leveneTest(Question_10 ~ Group, data = df)
+leveneTest(Question_11 ~ Group, data = df)
+leveneTest(Question_12 ~ Group, data = df)
+leveneTest(Question_13 ~ Group, data = df)
+leveneTest(Question_14 ~ Group, data = df)
+leveneTest(Question_15 ~ Group, data = df)
+leveneTest(Question_16 ~ Group, data = df)
+leveneTest(Question_17 ~ Group, data = df)
+leveneTest(Question_18 ~ Group, data = df)
+leveneTest(Mean_questions ~ Group, data = df)
+
+
+
+leveneTest(Percentage ~ Questions, data = long_data_Q)
+
+
+results_container <- df %>%
+  dplyr::select(Container_1:Container_10, Group) %>%
+  group_by(Group) %>%
+  doo(~ggpairs(.) + theme_bw(), result = "plots")
+results_container$plots
+
+results_question <- df %>%
+  select(Question_1:Question_18, Group) %>%
+  group_by(Group) %>%
+  doo(~ggpairs(.) + theme_bw(), result = "plots")
+results_question$plots
+```
+
+#Post hoc analysis containers
+```{r}
+options(scipen = 5)
+emm_CG <- emmeans(b, consec ~ Group + Container)
+post_hoc_CG <- data.frame(pairs(emm_CG))
+post_hoc_CG[order(post_hoc_CG$p.value, decreasing = F),]
+p <- data.frame(post_hoc_CG$p.value <= 0.05)
+
+
+stat.test_con <- long_data_C %>%
+  pairwise_t_test(Percentage ~ Container, paired = T,
+                  p.adjust.method = "bonferroni",
+                  var.equal = F
+    )
+stat.test_con
+
+stat.test_quest <- long_data_Q %>%
+  pairwise_t_test(Percentage ~ Questions, paired = T,
+                  p.adjust.method = "bonferroni",
+                  var.equal = F)
+stat.test_quest
+
+
+
+control_av <- aov(Percentage ~ Container, subset(long_data_C, long_data_C$Group == "2"))
+summary(control_av)
+TukeyHSD(control_av)
+
+
+experiment_av <- aov(Percentage ~ Container, subset(long_data_C, long_data_C$Group == "1"))
+summary(experiment_av)
+TukeyHSD(experiment_av)
+
+
+groupALL <- long_data_C
+pairwise.t.test(groupALL$Percentage, groupALL$Container, paired = TRUE, p.adjust.method = "bonferroni")
+boxplot(long_data_C$Percentage ~ long_data_C$Container)
+
+
+group1 <- subset(long_data_C, long_data_C$Group == "1")
+pairwise.t.test(group1$Percentage, group1$Container, paired = TRUE, p.adjust.method = "bonferroni")
+
+group2 <- subset(long_data_C, long_data_C$Group == "2")
+pairwise.t.test(group2$Percentage, group2$Container, paired = TRUE, p.adjust.method = "bonferroni")
+
+```
+
+#Post hoc analysis questions
+
+```{r}
+options(scipen = 10)
+emm_QQ <- emmeans(c, ~ Group + Questions)
+post_hoc_QQ <- data.frame(pairs(emm_QQ))
+post_hoc_QQ[order(post_hoc_QQ$p.value, decreasing = F),]
+post_hoc_QQ$p.value <= 0.05
+```
+
+#psychometric function
+```{r}
+df_psychofunction
+```
+
+
+```{r}
+Container <- c(1, 2, 3, 4, 5, 6, 7, 8)
+nCorrect <- c(12, 15, 24, 22, 21, 29, 41, 53)
+nIncorrect <- c(33, 53, 41, 43, 44, 36, 24, 12)
+psych_fun <- data.frame(Container, nCorrect, nIncorrect)
+```
+
+```{r}
+psych_fun$p <- psych_fun$nCorrect/(psych_fun$nCorrect + psych_fun$nIncorrect)
+p1 <- ggplot(data = psych_fun, aes(x = Container, y = p)) + geom_point()
+p1
+```
+
+```{r}
+library("psyphy")
+
+model <- glm(cbind(psych_fun$nCorrect, psych_fun$nIncorrect) ~ Container, family = binomial(mafc.probit(2)))
+```
+
+
+```{r}
+xseq <- seq(0, 8, len = 1000)  #I used, for example, a 1000 points
+yseq <- predict(model, data.frame(Container = xseq), type = "response")
+curve <- data.frame(xseq, yseq)
+p1 <- p1 + geom_line(data = curve, aes(x = xseq, y = yseq))
+p1
+```
+
+```{r}
+(m <- -coef(model)[[1]]/coef(model)[[2]])
+```
+
+```{r}
+(std <- 1/coef(model)[[2]])
+```
+
+```{r}
+p <- 0.8
+```
+
+```{r}
+(thre <- qnorm((p - 0.5)/0.5, m, std))  #( p-.5)/.5 because the asymptote is .5
+```
+```{r}
+threshold <- data.frame(p, thre)
+p1 <- p1 + geom_linerange(data = threshold, aes(x = thre, ymin = 0.5, ymax = p))
+p1
+```
+
+```{r}
+if(!require(psych)){install.packages("psych")}
+if(!require(RVAideMemoire)){install.packages("RVAideMemoire")}
+if(!require(coin)){install.packages("coin")}
+if(!require(reshape2)){install.packages("reshape2")}
+if(!require(rcompanion)){install.packages("rcompanion")}
+```
+
+```{r}
+
+df_psychofunction$Container_1 <- factor(df_psychofunction$Container_1)
+df_psychofunction$Container_2 <- factor(df_psychofunction$Container_2)
+df_psychofunction$Container_3 <- factor(df_psychofunction$Container_3)
+df_psychofunction$Container_4 <- factor(df_psychofunction$Container_4)
+df_psychofunction$Container_5 <- factor(df_psychofunction$Container_5)
+df_psychofunction$Container_6 <- factor(df_psychofunction$Container_6)
+df_psychofunction$Container_7 <- factor(df_psychofunction$Container_7)
+df_psychofunction$Container_8 <- factor(df_psychofunction$Container_8)
+
+
+df_psychofunction$Container_1 <- factor(
+  df_psychofunction$Container_1, levels = c(1, 0),
+  labels = c("success", "failure")
+  )
+
+df_psychofunction$Container_2 <- factor(
+  df_psychofunction$Container_2, levels = c(1, 0),
+  labels = c("success", "failure")
+  )
+
+df_psychofunction$Container_3 <- factor(
+  df_psychofunction$Container_3, levels = c(1, 0),
+  labels = c("success", "failure")
+  )
+
+df_psychofunction$Container_4 <- factor(
+  df_psychofunction$Container_4, levels = c(1, 0),
+  labels = c("success", "failure")
+  )
+
+df_psychofunction$Container_5 <- factor(
+  df_psychofunction$Container_5, levels = c(1, 0),
+  labels = c("success", "failure")
+  )
+
+df_psychofunction$Container_6 <- factor(
+  df_psychofunction$Container_6, levels = c(1, 0),
+  labels = c("success", "failure")
+  )
+
+df_psychofunction$Container_7 <- factor(
+  df_psychofunction$Container_7, levels = c(1, 0),
+  labels = c("success", "failure")
+  )
+
+df_psychofunction$Container_8 <- factor(
+  df_psychofunction$Container_8, levels = c(1, 0),
+  labels = c("success", "failure")
+  )
+
+summary(df_psychofunction)
+```
+
+
+```{r}
+
+df_psy_long <- gather(df_psychofunction, key =  Container, Answer, Container_1:Container_8, factor_key = T)
+
+Table = xtabs( ~ Answer + Container,
+       data=df_psy_long)
+
+
+barplot(Table,
+        beside = TRUE,
+        legend = T,
+        names = c("Контейнер 1", "Контейнер 2","Контейнер 3", "Контейнер 4","Контейнер 5", "Контейнер 6","Контейнер 7", "Контейнер 8"),
+        ylim = c(0, 75),   ### y-axis: used to prevent legend overlapping bars
+        cex.names = 1.2,   ### Text size for bars
+        cex.axis = 0.8,    ### Text size for axis
+        xlab = "Контейнеры",
+        ylab = "Частотность",
+        args.legend = list(x   = "topright",   ### Legend location
+                           cex = 0.8,          ### Legend text size
+                           bty = "n"))
+```
+
+```{r}
+library(RVAideMemoire)
+options(scipen = 10)
+cochran.qtest(Answer ~ Container | Person,
+              data = df_psy_long)
+
+
+mcnamara_holm_adjust<- pairwise_mcnemar_test(data    = df_psy_long, 
+                      formula = Answer ~ Container|Person, 
+                      correct = F, 
+                      p.adjust.method = "holm")
+
+
+kable(mcnamara_holm_adjust) %>% kable_styling(latex_options = "striped")
+
+
+```
+#cohen D
+
+```{r}
+df_gr_D <- df$Container_1[df$Group == 1]
+
+df_gr_D_2 <- df$Container_1[df$Group == 2]
+
+D1 <- mean(df_gr_D)
+D2 <- mean(df_gr_D_2)
+
+s1 <- sd(df_gr_D)
+s2 <- sd(df_gr_D_2)
+
+#find sample size of each sample
+n1 <- length(df_gr_D)
+n2 <- length(df_gr_D_2)
+
+#calculate pooled standard deviation
+pooled <- sqrt(((n1-1)*s1^2 + (n2-1)*s2^2) / (n1+n1-2))
+
+
+S1 <- sqrt((sd(df_gr_D) + sd(df_gr_D_2))/2)
+
+d <- (D1 - D2)/pooled
+
+d/sqrt(65/63)
+
+cohensD(df_gr_D, df_gr_D_2)
+```
+
+
+
